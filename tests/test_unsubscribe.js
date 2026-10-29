@@ -182,6 +182,7 @@ assert.strictEqual(unsub.postContentType(), "application/x-www-form-urlencoded")
   assert.strictEqual(unsub.postStatus("000"), 0)
   assert.strictEqual(unsub.postSucceeded(204), true)
   assert.strictEqual(unsub.postSucceeded(302), false, "a redirect is never followed, so it is not success")
+  assert.strictEqual(unsub.postSucceeded(0), false)
 }
 
 console.log("test_unsubscribe.js ok")

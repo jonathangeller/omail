@@ -1,7 +1,7 @@
 #!/bin/sh
-# Writes one attachment to the downloads directory. It does not open it: the
-# file's type is the sender's choice, and so would be the program a click on
-# "save" launched.
+# Writes one attachment to the downloads directory. It does not open it: a file
+# the sender chose is not something to hand to a desktop handler unasked, so the
+# window offers an explicit Open once the save has been reported.
 #
 # One line on stdin, the filename and the octets, both base64 and separated by
 # a space. The octets are base64 already, which is what both providers hand
