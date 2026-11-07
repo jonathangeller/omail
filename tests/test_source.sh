@@ -27,10 +27,17 @@ while IFS= read -r -d '' found; do JS_FILES+=("$found"); done \
 # There is no exception any more: the mark is an O in an envelope, drawn in the
 # theme's own foreground like every other glyph, so no QML file names a colour.
 if grep -nE '(color|Color)\s*:\s*"#[0-9A-Fa-f]{3,8}"' -- "${QML_FILES[@]}"; then
-  fail "hard-coded colour in QML: use Color.* or a colour passed in from App.qml"
+  fail "hard-coded colour in QML: use Commons.Color.* or a colour passed in from App.qml"
 fi
 if grep -nE ':\s*"(red|blue|green|white|black|yellow|orange|purple|gray|grey)"' -- "${QML_FILES[@]}"; then
-  fail "named display colour in QML: use Color.* instead"
+  fail "named display colour in QML: use Commons.Color.* instead"
+fi
+
+# 1b. The theme is read through the qualified import. Qt 6.12 added a `Color`
+#     singleton to QtQuick that shadows qs.Commons' one, so a bare `Color.x`
+#     resolves to undefined and the whole window renders black.
+if grep -nE '(^|[^.A-Za-z0-9_])Color\.[a-z]' -- "${QML_FILES[@]}"; then
+  fail "bare Color.* in QML: import qs.Commons as Commons and use Commons.Color.*"
 fi
 
 # 2. The JS libraries are read by the QML engine, which does not accept ES6.
