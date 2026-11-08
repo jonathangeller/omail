@@ -271,4 +271,16 @@ assert.strictEqual(oauth.byteLength(""), 0)
   assert.ok(normal.indexOf("CaskaydiaMono Nerd Font") > 0)
 }
 
+// ---------------------------------------------------------- restore retry
+//
+// A refresh that fails at boot, before the network is up, is tried again on a
+// growing delay, and stops rather than polling Google forever.
+
+assert.strictEqual(oauth.restoreRetryDelay(1), 3000)
+assert.strictEqual(oauth.restoreRetryDelay(2), 6000)
+assert.strictEqual(oauth.restoreRetryDelay(20), 60000, "capped at a minute")
+assert.strictEqual(oauth.restoreRetryDelay(21), 0, "gives up after twenty")
+assert.strictEqual(oauth.restoreRetryDelay(0), 0)
+assert.strictEqual(oauth.restoreRetryDelay(undefined), 0)
+
 console.log("test_oauth.js ok")
