@@ -340,6 +340,7 @@ Item {
     request.open("POST", OAuth.TOKEN_URL)
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
     request.send(body)
+    tokenRequestTimeout.restart()
   }
 
   function refreshWithToken(refreshToken, purpose) {
@@ -641,6 +642,14 @@ Item {
     id: callbackStopTimer
     interval: 250
     onTriggered: if (callbackListener.running) callbackListener.running = false
+  }
+
+  // A token request stalled by a dead connection would hold refreshBusy, and
+  // with it every Gmail request, forever; XMLHttpRequest has no timeout.
+  Timer {
+    id: tokenRequestTimeout
+    interval: 30000
+    onTriggered: if (root.tokenRequest) root.tokenRequest.abort()
   }
 
   Timer {
