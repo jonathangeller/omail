@@ -110,8 +110,31 @@ Item {
       } else {
         xhr.send()
       }
+      root.pending.push({ xhr: xhr, at: Date.now() })
     })
     return handle
+  }
+
+  // Qt's XMLHttpRequest has no timeout, and one whose connection died under it
+  // (a suspend, a Wi-Fi change) never completes — leaving the unread poll
+  // waiting on it forever. Aborting delivers it to its callback as a failure.
+  property var pending: []
+
+  Timer {
+    interval: 15000
+    repeat: true
+    running: root.inFlight > 0
+    onTriggered: {
+      var now = Date.now(), keep = []
+      for (var i = 0; i < root.pending.length; i++) {
+        var p = root.pending[i]
+        var state = p.xhr.readyState
+        if (state === XMLHttpRequest.DONE || state === XMLHttpRequest.UNSENT) continue
+        if (now - p.at > 120000) p.xhr.abort()
+        else keep.push(p)
+      }
+      root.pending = keep
+    }
   }
 
   // ---------------------------------------------------------------- reads
