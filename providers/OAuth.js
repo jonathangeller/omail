@@ -136,12 +136,12 @@ var MAX_CALLBACK_ATTEMPTS = 20
 // failed for a reason other than a revoked grant, or 0 to stop. At boot the
 // network, and without an RTC the clock, is often not ready when the shell
 // starts, so the first refresh fails although the stored token is good.
-// Twenty tries, 3s apart and growing to a minute, cover about ten minutes.
-var MAX_RESTORE_RETRIES = 20
-
+// The same holds after resume, for as long as the network stays down. Tries
+// start 3s apart and grow to once a minute, and never stop: giving up would
+// leave a good session signed out until the shell restarts.
 function restoreRetryDelay(attempt) {
   var n = Number(attempt)
-  if (!(n >= 1) || n > MAX_RESTORE_RETRIES) return 0
+  if (!(n >= 1)) return 0
   return Math.min(60000, 3000 * Math.floor(n))
 }
 

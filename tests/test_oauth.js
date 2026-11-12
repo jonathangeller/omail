@@ -273,13 +273,13 @@ assert.strictEqual(oauth.byteLength(""), 0)
 
 // ---------------------------------------------------------- restore retry
 //
-// A refresh that fails at boot, before the network is up, is tried again on a
-// growing delay, and stops rather than polling Google forever.
+// A refresh that fails before the network is up, at boot or after resume, is tried again on a
+// growing delay that settles at once a minute and never gives up.
 
 assert.strictEqual(oauth.restoreRetryDelay(1), 3000)
 assert.strictEqual(oauth.restoreRetryDelay(2), 6000)
 assert.strictEqual(oauth.restoreRetryDelay(20), 60000, "capped at a minute")
-assert.strictEqual(oauth.restoreRetryDelay(21), 0, "gives up after twenty")
+assert.strictEqual(oauth.restoreRetryDelay(500), 60000, "keeps trying once a minute")
 assert.strictEqual(oauth.restoreRetryDelay(0), 0)
 assert.strictEqual(oauth.restoreRetryDelay(undefined), 0)
 

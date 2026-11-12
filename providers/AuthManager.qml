@@ -359,10 +359,11 @@ Item {
         // A revoked or expired grant is never coming back. Dropping it here
         // means the panel offers "Sign in" instead of retrying forever.
         if (result.invalidGrant) root.clearStoredToken()
-        // At boot the network (and, without an RTC, the clock) is often not
-        // ready yet, so a restore that fails for any other reason is tried
-        // again rather than leaving the panel asking to sign in.
-        else if (purpose === "restore") root.scheduleRestoreRetry()
+        // Any other failure is retried, whether it came from the restore at
+        // boot or from a poll after resume: the session was reset above, so
+        // without a retry the account stays signed out and stops polling
+        // until the shell restarts.
+        else root.scheduleRestoreRetry()
         if (purpose === "request") root.finishWaiters("", root.lastError)
         else root.sessionUnavailable(root.lastError)
         return
