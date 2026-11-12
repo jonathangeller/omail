@@ -359,6 +359,11 @@ Item {
         // A revoked or expired grant is never coming back. Dropping it here
         // means the panel offers "Sign in" instead of retrying forever.
         if (result.invalidGrant) root.clearStoredToken()
+        // Any other failure is retried, whether it came from the restore at
+        // boot or from a poll after resume: the session was reset above, so
+        // without a retry the account stays signed out and stops polling
+        // until the shell restarts.
+        else root.scheduleRestoreRetry()
         if (purpose === "request") root.finishWaiters("", root.lastError)
         else root.sessionUnavailable(root.lastError)
         return
@@ -368,7 +373,19 @@ Item {
     })
   }
 
+  property int restoreRetries: 0
+
+  function scheduleRestoreRetry() {
+    var delay = OAuth.restoreRetryDelay(restoreRetries + 1)
+    if (delay === 0) return
+    restoreRetries++
+    restoreRetryTimer.interval = delay
+    restoreRetryTimer.restart()
+  }
+
   function acceptToken(result) {
+    restoreRetries = 0
+    restoreRetryTimer.stop()
     accessToken = result.accessToken
     accessTokenExpiresAt = Date.now() + result.expiresIn * 1000
     if (result.scope) grantedScope = result.scope
@@ -557,6 +574,8 @@ Item {
   }
 
   function logout() {
+    restoreRetryTimer.stop()
+    restoreRetries = 0
     cancelLogin()
     resetMemorySession()
     sessionChecked = true
@@ -641,6 +660,11 @@ Item {
     id: callbackStopTimer
     interval: 250
     onTriggered: if (callbackListener.running) callbackListener.running = false
+  }
+
+  Timer {
+    id: restoreRetryTimer
+    onTriggered: if (!root.loggedIn && !root.loginBusy) root.restoreSession()
   }
 
   Timer {
