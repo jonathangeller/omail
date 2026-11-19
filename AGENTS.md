@@ -11,6 +11,7 @@
 - Secondary text mixes the foreground toward the **background**, not
   `Qt.darker`. On a light theme, darkening an almost-black foreground makes
   "secondary" text heavier than body text — the opposite of what it means.
+- Reach the theme as `Commons.Color`, through `import qs.Commons as Commons`, never a bare `Color`. Qt 6.12 added a `QtQuick` type named `Color` that shadows the shell's singleton, so a bare `Color.foreground` is undefined and every colour falls back to black — black text on a black window. `tests/test_source.sh` fails on a bare one.
 - `tests/test_source.sh` enforces the no-literal-colors rule. Keep it updated
   rather than working around it.
 
